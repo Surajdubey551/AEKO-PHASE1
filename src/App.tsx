@@ -9,8 +9,13 @@ import DashboardLayout from "./components/dashboard/DashboardLayout";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import FeedPage from "./pages/dashboard/FeedPage";
 import AccountPage from "./pages/dashboard/AccountPage";
-import ToolsPage from "./pages/dashboard/ToolsPage";
 import SupportPage from "./pages/dashboard/SupportPage";
+import AuthSignIn from "./pages/AuthSignIn";
+import ToolsLayout from "./components/dashboard/ToolsLayout";
+import AgentLLMPage from "./pages/dashboard/AgentLLMPage";
+import ImageToolsPage from "./pages/dashboard/ImageToolsPage";
+import VideoToolsPage from "./pages/dashboard/VideoToolsPage";
+import AgentStorePage from "./pages/dashboard/AgentStorePage";
 
 const queryClient = new QueryClient();
 
@@ -22,12 +27,18 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/auth/sign-in" element={<AuthSignIn />} />
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardHome />} />
             <Route path="feed" element={<FeedPage />} />
-            <Route path="tools" element={<ToolsPage />} />
+            <Route path="tools" element={<ToolsLayout />}>
+              <Route path="agent" element={<AgentLLMPage />} />
+              <Route path="image" element={<ImageToolsPage />} />
+              <Route path="video" element={<VideoToolsPage />} />
+            </Route>
             <Route path="account" element={<AccountPage />} />
             <Route path="support" element={<SupportPage />} />
+            <Route path="agent-store" element={<AgentStorePage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -1,11 +1,16 @@
 import { motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import logo from "@/assets/logo.png";
+import logoDark from "@/assets/ChatGPT Image Dec 25, 2025, 03_45_44 PM.png";
+// import logoLight from "@/assets/ak-logo.png"; // Uncomment when you add the AK logo file
+import { useTheme } from "@/hooks/use-theme";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+  const { theme } = useTheme();
 
   const navLinks = [
     { name: "Models", href: "#models" },
@@ -25,7 +30,11 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <a href="#" className="flex items-center gap-2">
-            <img src={logo} alt="AEKO" className="w-10 h-10 object-contain" />
+            <img 
+              src={logoDark} 
+              alt="AEKO" 
+              className="w-10 h-10 object-contain" 
+            />
             <span className="text-xl font-bold text-foreground">AEKO</span>
           </a>
 
@@ -44,10 +53,18 @@ const Navbar = () => {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-4">
-            <Button variant="ghost" size="sm">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/auth/sign-in")}
+            >
               Sign In
             </Button>
-            <Button variant="default" size="sm">
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => navigate("/dashboard/tools")}
+            >
               Start Creating
             </Button>
           </div>
@@ -82,10 +99,24 @@ const Navbar = () => {
               </a>
             ))}
             <div className="pt-4 border-t border-border space-y-2">
-              <Button variant="ghost" className="w-full justify-start">
+              <Button
+                variant="ghost"
+                className="w-full justify-start"
+                onClick={() => {
+                  setIsOpen(false);
+                  navigate("/auth/sign-in");
+                }}
+              >
                 Sign In
               </Button>
-              <Button variant="default" className="w-full">
+              <Button
+                variant="default"
+                className="w-full"
+                onClick={() => {
+                  setIsOpen(false);
+                  navigate("/dashboard/tools");
+                }}
+              >
                 Start Creating
               </Button>
             </div>

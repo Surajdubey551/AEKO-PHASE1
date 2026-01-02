@@ -4,6 +4,65 @@
 
 @layer base {
   :root {
+    /* Light theme */
+    --background: 0 0% 100%;
+    --foreground: 230 25% 10%;
+
+    --card: 0 0% 98%;
+    --card-foreground: 230 25% 10%;
+
+    --popover: 0 0% 98%;
+    --popover-foreground: 230 25% 10%;
+
+    /* Electric blue primary */
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Light gray secondary */
+    --secondary: 230 20% 96%;
+    --secondary-foreground: 230 25% 10%;
+
+    --muted: 230 20% 95%;
+    --muted-foreground: 215 20% 40%;
+
+    /* Neon purple accent */
+    --accent: 270 91% 65%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 230 20% 90%;
+    --input: 230 20% 95%;
+    --ring: 217 91% 60%;
+
+    --radius: 0.75rem;
+
+    /* Custom gradients for light theme */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(270 91% 65%) 50%, hsl(190 95% 55%) 100%);
+    --gradient-glow: linear-gradient(135deg, hsl(217 91% 60% / 0.2) 0%, hsl(270 91% 65% / 0.2) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 98% / 0.9) 0%, hsl(0 0% 100% / 0.95) 100%);
+    --gradient-hero: radial-gradient(ellipse at 50% 0%, hsl(270 91% 65% / 0.1) 0%, transparent 50%),
+                     radial-gradient(ellipse at 80% 50%, hsl(217 91% 60% / 0.08) 0%, transparent 40%),
+                     radial-gradient(ellipse at 20% 80%, hsl(190 95% 55% / 0.06) 0%, transparent 40%);
+
+    /* Shadows for light theme */
+    --shadow-glow: 0 0 40px hsl(217 91% 60% / 0.1);
+    --shadow-glow-accent: 0 0 40px hsl(270 91% 65% / 0.15);
+    --shadow-card: 0 4px 24px hsl(0 0% 0% / 0.08);
+
+    /* Sidebar for light theme */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 230 25% 10%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 230 20% 96%;
+    --sidebar-accent-foreground: 230 25% 10%;
+    --sidebar-border: 230 20% 90%;
+    --sidebar-ring: 217 91% 60%;
+  }
+
+  .dark {
     /* Deep space dark theme */
     --background: 230 25% 5%;
     --foreground: 210 40% 98%;
@@ -29,16 +88,14 @@
     --accent: 270 91% 65%;
     --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 62% 30%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 230 20% 18%;
     --input: 230 20% 15%;
     --ring: 217 91% 60%;
 
-    --radius: 0.75rem;
-
-    /* Custom gradients */
+    /* Custom gradients for dark theme */
     --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(270 91% 65%) 50%, hsl(190 95% 55%) 100%);
     --gradient-glow: linear-gradient(135deg, hsl(217 91% 60% / 0.3) 0%, hsl(270 91% 65% / 0.3) 100%);
     --gradient-card: linear-gradient(135deg, hsl(230 25% 12% / 0.8) 0%, hsl(230 25% 8% / 0.9) 100%);
@@ -46,12 +103,12 @@
                      radial-gradient(ellipse at 80% 50%, hsl(217 91% 60% / 0.1) 0%, transparent 40%),
                      radial-gradient(ellipse at 20% 80%, hsl(190 95% 55% / 0.08) 0%, transparent 40%);
 
-    /* Shadows */
+    /* Shadows for dark theme */
     --shadow-glow: 0 0 40px hsl(217 91% 60% / 0.15);
     --shadow-glow-accent: 0 0 40px hsl(270 91% 65% / 0.2);
     --shadow-card: 0 4px 24px hsl(0 0% 0% / 0.4);
 
-    /* Sidebar - keeping dark theme */
+    /* Sidebar for dark theme */
     --sidebar-background: 230 25% 6%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 217 91% 60%;
@@ -60,28 +117,6 @@
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 230 20% 18%;
     --sidebar-ring: 217 91% 60%;
-  }
-
-  .dark {
-    --background: 230 25% 5%;
-    --foreground: 210 40% 98%;
-    --card: 230 25% 8%;
-    --card-foreground: 210 40% 98%;
-    --popover: 230 25% 8%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 230 25% 5%;
-    --secondary: 230 20% 15%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 230 20% 12%;
-    --muted-foreground: 215 20% 55%;
-    --accent: 270 91% 65%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 230 20% 18%;
-    --input: 230 20% 15%;
-    --ring: 217 91% 60%;
   }
 }
 
@@ -201,6 +236,15 @@
   }
   100% {
     background-position: 0% 50%;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
   }
 }
 

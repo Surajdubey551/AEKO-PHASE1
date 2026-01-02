@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   MessageSquare, 
@@ -12,9 +12,14 @@ import {
   ChevronDown,
   Sparkles,
   Settings2,
-  Zap
+  Zap,
+  Loader2,
+  User,
+  Bot
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { llmAPI } from "@/lib/api";
 
 const tools = [
   { id: "chat", label: "Chat Agent", icon: MessageSquare, color: "from-blue-500 to-cyan-500" },
@@ -37,14 +42,124 @@ const imageModels = [
   { id: "dalle", name: "DALL-E 3", icon: "🖼️" },
 ];
 
+interface ChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  timestamp: Date;
+}
+
 const ToolsPage = () => {
   const [activeTool, setActiveTool] = useState("chat");
   const [prompt, setPrompt] = useState("");
   const [selectedModel, setSelectedModel] = useState(chatModels[0]);
   const [isModelOpen, setIsModelOpen] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [temperature, setTemperature] = useState(0.7);
+  const [maxTokens, setMaxTokens] = useState(1000);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const currentModels = activeTool === "chat" ? chatModels : imageModels;
+
+  // Scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
+
+  const handleSendMessage = async () => {
+    if (!prompt.trim()) return;
+
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      role: "user",
+      content: prompt.trim(),
+      timestamp: new Date(),
+    };
+
+    setChatMessages((prev) => [...prev, userMessage]);
+    setPrompt("");
+    setIsLoading(true);
+
+    try {
+      const response = await llmAPI.chat(prompt.trim(), {
+        max_tokens: maxTokens,
+        temperature: temperature,
+      });
+
+      if (response.success && response.data) {
+        // Extract the assistant's message from the ModelsLab response
+        // ModelsLab API response structure handling
+        let assistantContent = "";
+        
+        // Try different possible response structures
+        if (response.data.choices && Array.isArray(response.data.choices) && response.data.choices[0]) {
+          // OpenAI-style format
+          assistantContent = response.data.choices[0].message?.content || 
+                            response.data.choices[0].text || 
+                            response.data.choices[0].content || "";
+        } else if (response.data.message) {
+          // Direct message field
+          assistantContent = typeof response.data.message === 'string' 
+            ? response.data.message 
+            : response.data.message.content || "";
+        } else if (response.data.content) {
+          // Direct content field
+          assistantContent = response.data.content;
+        } else if (response.data.text) {
+          // Text field
+          assistantContent = response.data.text;
+        } else if (response.data.response) {
+          // Response field
+          assistantContent = response.data.response;
+        } else if (typeof response.data === "string") {
+          // String response
+          assistantContent = response.data;
+        } else {
+          // Fallback: stringify the whole response for debugging
+          assistantContent = `Response received. Check console for details.\n\n${JSON.stringify(response.data, null, 2)}`;
+          console.log("Full ModelsLab response:", response.data);
+        }
+        
+        // If still empty, show error
+        if (!assistantContent.trim()) {
+          throw new Error("Received empty response from AI");
+        }
+
+        const assistantMessage: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: assistantContent,
+          timestamp: new Date(),
+        };
+
+        setChatMessages((prev) => [...prev, assistantMessage]);
+        toast.success("Response received!");
+      } else {
+        throw new Error(response.message || "Failed to get response");
+      }
+    } catch (error: any) {
+      console.error("LLM API error:", error);
+      const errorMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: `Error: ${error.message || "Failed to get response. Please try again."}`,
+        timestamp: new Date(),
+      };
+      setChatMessages((prev) => [...prev, errorMessage]);
+      toast.error(error.message || "Failed to get AI response");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -152,48 +267,79 @@ const ToolsPage = () => {
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
+              onKeyDown={handleKeyPress}
+              disabled={isLoading}
               placeholder={
                 activeTool === "chat"
-                  ? "Ask me anything..."
+                  ? "Ask me anything... (Press Enter to send)"
                   : "Describe what you want to create..."
               }
-              className="w-full h-40 bg-transparent text-foreground placeholder:text-muted-foreground resize-none focus:outline-none text-lg"
+              className="w-full h-40 bg-transparent text-foreground placeholder:text-muted-foreground resize-none focus:outline-none text-lg disabled:opacity-50"
             />
 
             {/* Advanced Settings */}
-            {showAdvanced && activeTool !== "chat" && (
+            {showAdvanced && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 className="pt-4 border-t border-border/50 mt-4"
               >
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-xs text-muted-foreground mb-1">Steps</label>
-                    <input
-                      type="number"
-                      defaultValue={30}
-                      className="w-full px-3 py-2 rounded-lg bg-secondary/30 border border-border/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    />
+                {activeTool === "chat" ? (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1">Temperature</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="2"
+                        step="0.1"
+                        value={temperature}
+                        onChange={(e) => setTemperature(parseFloat(e.target.value))}
+                        className="w-full px-3 py-2 rounded-lg bg-secondary/30 border border-border/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1">Max Tokens</label>
+                      <input
+                        type="number"
+                        min="100"
+                        max="4000"
+                        step="100"
+                        value={maxTokens}
+                        onChange={(e) => setMaxTokens(parseInt(e.target.value))}
+                        className="w-full px-3 py-2 rounded-lg bg-secondary/30 border border-border/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-xs text-muted-foreground mb-1">Guidance</label>
-                    <input
-                      type="number"
-                      step="0.5"
-                      defaultValue={7.5}
-                      className="w-full px-3 py-2 rounded-lg bg-secondary/30 border border-border/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    />
+                ) : (
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1">Steps</label>
+                      <input
+                        type="number"
+                        defaultValue={30}
+                        className="w-full px-3 py-2 rounded-lg bg-secondary/30 border border-border/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1">Guidance</label>
+                      <input
+                        type="number"
+                        step="0.5"
+                        defaultValue={7.5}
+                        className="w-full px-3 py-2 rounded-lg bg-secondary/30 border border-border/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1">Seed</label>
+                      <input
+                        type="number"
+                        defaultValue={-1}
+                        className="w-full px-3 py-2 rounded-lg bg-secondary/30 border border-border/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-xs text-muted-foreground mb-1">Seed</label>
-                    <input
-                      type="number"
-                      defaultValue={-1}
-                      className="w-full px-3 py-2 rounded-lg bg-secondary/30 border border-border/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    />
-                  </div>
-                </div>
+                )}
               </motion.div>
             )}
 
@@ -204,27 +350,117 @@ const ToolsPage = () => {
                 <span className="text-sm">Attach</span>
               </button>
 
-              <Button variant="hero" size="lg" className="gap-2">
-                <Zap className="w-4 h-4" />
-                {activeTool === "chat" ? "Send" : "Generate"}
+              <Button 
+                variant="hero" 
+                size="lg" 
+                className="gap-2"
+                onClick={activeTool === "chat" ? handleSendMessage : undefined}
+                disabled={isLoading || !prompt.trim()}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Zap className="w-4 h-4" />
+                    {activeTool === "chat" ? "Send" : "Generate"}
+                  </>
+                )}
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Right: Output Preview */}
-        <div className="glass-card rounded-2xl p-6 flex flex-col items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-              <Sparkles className="w-8 h-8 text-primary" />
+        {/* Right: Output Preview / Chat Messages */}
+        <div className="glass-card rounded-2xl p-6 flex flex-col min-h-[400px] max-h-[600px]">
+          {activeTool === "chat" ? (
+            <div className="flex flex-col h-full">
+              <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                <MessageSquare className="w-5 h-5" />
+                Chat
+              </h3>
+              <div className="flex-1 overflow-y-auto space-y-4 mb-4">
+                {chatMessages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-center">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                      <Sparkles className="w-8 h-8 text-primary" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
+                      Start a Conversation
+                    </h3>
+                    <p className="text-sm text-muted-foreground max-w-xs">
+                      Ask me anything and I'll help you with creative ideas, technical questions, or content generation.
+                    </p>
+                  </div>
+                ) : (
+                  chatMessages.map((message) => (
+                    <motion.div
+                      key={message.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                    >
+                      {message.role === "assistant" && (
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center flex-shrink-0">
+                          <Bot className="w-4 h-4 text-primary" />
+                        </div>
+                      )}
+                      <div
+                        className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                          message.role === "user"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-secondary/50 text-foreground"
+                        }`}
+                      >
+                        <p className="text-sm whitespace-pre-wrap break-words">
+                          {message.content}
+                        </p>
+                        <p className={`text-xs mt-1 ${
+                          message.role === "user" ? "text-primary-foreground/70" : "text-muted-foreground"
+                        }`}>
+                          {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                      {message.role === "user" && (
+                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                          <User className="w-4 h-4 text-primary" />
+                        </div>
+                      )}
+                    </motion.div>
+                  ))
+                )}
+                {isLoading && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="flex gap-3 justify-start"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                      <Bot className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="bg-secondary/50 rounded-2xl px-4 py-3">
+                      <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                    </div>
+                  </motion.div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              Ready to Create
-            </h3>
-            <p className="text-sm text-muted-foreground max-w-xs">
-              Enter a prompt and click Generate to see your AI creation appear here
-            </p>
-          </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                <Sparkles className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                Ready to Create
+              </h3>
+              <p className="text-sm text-muted-foreground max-w-xs">
+                Enter a prompt and click Generate to see your AI creation appear here
+              </p>
+            </div>
+          )}
         </div>
       </motion.div>
 
