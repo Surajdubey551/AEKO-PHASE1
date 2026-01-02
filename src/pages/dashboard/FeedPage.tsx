@@ -1,6 +1,15 @@
 import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, Clock, Image, Video, Loader2, Sparkles, Search, SlidersHorizontal } from "lucide-react";
+import {
+  TrendingUp,
+  Clock,
+  Image,
+  Video,
+  Loader2,
+  Sparkles,
+  Search,
+  SlidersHorizontal,
+} from "lucide-react";
 import { toast } from "sonner";
 import { FeedItem } from "@/components/feed/FeedCard";
 import MasonryCard from "@/components/feed/MasonryCard";
@@ -23,7 +32,15 @@ const sortOptions = [
 ];
 
 const generateMockItems = (startId: number, count: number): FeedItem[] => {
-  const models = ["FLUX Pro", "Stable Diffusion XL", "DALL-E 3", "Midjourney Style", "Runway Gen-3", "Pika Labs"];
+  // ...no change...
+  const models = [
+    "FLUX Pro",
+    "Stable Diffusion XL",
+    "DALL-E 3",
+    "Midjourney Style",
+    "Runway Gen-3",
+    "Pika Labs",
+  ];
   const prompts = [
     "Cyberpunk city with neon lights and flying cars at sunset",
     "Abstract digital art with flowing colors and geometric shapes",
@@ -42,7 +59,19 @@ const generateMockItems = (startId: number, count: number): FeedItem[] => {
     "Vintage interior room with afternoon sunlight streaming through windows",
     "Two monkeys having a conversation, photorealistic animal portrait",
   ];
-  const usernames = ["creator_1", "artist_pro", "filmmaker", "tech_art", "fantasy_maker", "motion_artist", "ai_wizard", "pixel_master", "onboku", "atreyu77", "visual_dreams"];
+  const usernames = [
+    "creator_1",
+    "artist_pro",
+    "filmmaker",
+    "tech_art",
+    "fantasy_maker",
+    "motion_artist",
+    "ai_wizard",
+    "pixel_master",
+    "onboku",
+    "atreyu77",
+    "visual_dreams",
+  ];
   const avatars = [
     "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100",
     "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100",
@@ -76,10 +105,12 @@ const generateMockItems = (startId: number, count: number): FeedItem[] => {
     const randomImage = Math.floor(Math.random() * images.length);
     const randomPrompt = Math.floor(Math.random() * prompts.length);
     const randomModel = Math.floor(Math.random() * models.length);
-    
+
     const hoursAgo = Math.floor(Math.random() * 168);
-    const createdAt = new Date(Date.now() - hoursAgo * 60 * 60 * 1000).toISOString();
-    
+    const createdAt = new Date(
+      Date.now() - hoursAgo * 60 * 60 * 1000
+    ).toISOString();
+
     return {
       id,
       type: isVideo ? "video" : "image",
@@ -107,11 +138,13 @@ const generateMockItems = (startId: number, count: number): FeedItem[] => {
 const FeedPage = () => {
   const [activeFilter, setActiveFilter] = useState("all");
   const [activeSort, setActiveSort] = useState("top");
-  const [items, setItems] = useState<FeedItem[]>(() => generateMockItems(1, 20));
+  const [items, setItems] = useState<FeedItem[]>(() =>
+    generateMockItems(1, 20)
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   // Modal states
   const [reelsOpen, setReelsOpen] = useState(false);
   const [reelsIndex, setReelsIndex] = useState(0);
@@ -124,14 +157,14 @@ const FeedPage = () => {
 
   const loadMore = useCallback(() => {
     if (isLoading || !hasMore) return;
-    
+
     setIsLoading(true);
-    
+
     setTimeout(() => {
       const newItems = generateMockItems(items.length + 1, 12);
-      setItems(prev => [...prev, ...newItems]);
+      setItems((prev) => [...prev, ...newItems]);
       setIsLoading(false);
-      
+
       if (items.length >= 80) {
         setHasMore(false);
       }
@@ -155,35 +188,41 @@ const FeedPage = () => {
   });
 
   const handleLike = (id: number) => {
-    setItems(prev => prev.map(item => {
-      if (item.id === id) {
-        const newIsLiked = !item.isLiked;
-        if (newIsLiked) {
-          toast.success("Added to your likes!");
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.id === id) {
+          const newIsLiked = !item.isLiked;
+          if (newIsLiked) {
+            toast.success("Added to your likes!");
+          }
+          return {
+            ...item,
+            isLiked: newIsLiked,
+            likes: newIsLiked ? item.likes + 1 : item.likes - 1,
+          };
         }
-        return {
-          ...item,
-          isLiked: newIsLiked,
-          likes: newIsLiked ? item.likes + 1 : item.likes - 1
-        };
-      }
-      return item;
-    }));
+        return item;
+      })
+    );
   };
 
   const handleSave = (id: number) => {
-    setItems(prev => prev.map(item => {
-      if (item.id === id) {
-        const newIsSaved = !item.isSaved;
-        toast.success(newIsSaved ? "Saved to collection!" : "Removed from collection");
-        return {
-          ...item,
-          isSaved: newIsSaved,
-          saves: newIsSaved ? item.saves + 1 : item.saves - 1
-        };
-      }
-      return item;
-    }));
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.id === id) {
+          const newIsSaved = !item.isSaved;
+          toast.success(
+            newIsSaved ? "Saved to collection!" : "Removed from collection"
+          );
+          return {
+            ...item,
+            isSaved: newIsSaved,
+            saves: newIsSaved ? item.saves + 1 : item.saves - 1,
+          };
+        }
+        return item;
+      })
+    );
   };
 
   const handleShare = (id: number) => {
@@ -192,13 +231,15 @@ const FeedPage = () => {
   };
 
   const handleFollow = (id: number) => {
-    setItems(prev => prev.map(item => {
-      if (item.id === id) {
-        toast.success(`Following @${item.author.username}`);
-        return { ...item, isFollowing: true };
-      }
-      return item;
-    }));
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.id === id) {
+          toast.success(`Following @${item.author.username}`);
+          return { ...item, isFollowing: true };
+        }
+        return item;
+      })
+    );
   };
 
   const handleOpenComments = (id: number) => {
@@ -207,8 +248,8 @@ const FeedPage = () => {
   };
 
   const handleOpenReels = (id: number) => {
-    const videoItems = items.filter(item => item.type === "video");
-    const index = videoItems.findIndex(item => item.id === id);
+    const videoItems = items.filter((item) => item.type === "video");
+    const index = videoItems.findIndex((item) => item.id === id);
     if (index !== -1) {
       setReelsIndex(index);
       setReelsOpen(true);
@@ -221,125 +262,167 @@ const FeedPage = () => {
   };
 
   const handlePrevDetail = () => {
-    const currentIndex = sortedItems.findIndex(item => item.id === selectedItemId && item.type === "image");
-    const imageItems = sortedItems.filter(item => item.type === "image");
-    const currentImageIndex = imageItems.findIndex(item => item.id === selectedItemId);
+    const imageItems = sortedItems.filter((item) => item.type === "image");
+    const currentImageIndex = imageItems.findIndex(
+      (item) => item.id === selectedItemId
+    );
     if (currentImageIndex > 0) {
       setSelectedItemId(imageItems[currentImageIndex - 1].id);
     }
   };
 
   const handleNextDetail = () => {
-    const imageItems = sortedItems.filter(item => item.type === "image");
-    const currentImageIndex = imageItems.findIndex(item => item.id === selectedItemId);
+    const imageItems = sortedItems.filter((item) => item.type === "image");
+    const currentImageIndex = imageItems.findIndex(
+      (item) => item.id === selectedItemId
+    );
     if (currentImageIndex < imageItems.length - 1) {
       setSelectedItemId(imageItems[currentImageIndex + 1].id);
     }
   };
 
-  const selectedItem = items.find(item => item.id === selectedItemId) || null;
-  const imageItems = sortedItems.filter(item => item.type === "image");
-  const currentImageIndex = imageItems.findIndex(item => item.id === selectedItemId);
-  const videoItems = items.filter(item => item.type === "video");
+  const selectedItem =
+    items.find((item) => item.id === selectedItemId) || null;
+  const imageItems = sortedItems.filter((item) => item.type === "image");
+  const currentImageIndex = imageItems.findIndex(
+    (item) => item.id === selectedItemId
+  );
+  const videoItems = items.filter((item) => item.type === "video");
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border -mx-4 lg:-mx-8 px-4 lg:px-8 py-3 sm:py-4">
-        <div className="flex flex-col gap-3 sm:gap-4">
-          {/* Search bar - mobile first */}
-          <div className="relative">
+      <header
+        className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border
+        px-2 sm:px-4 xl:px-12 py-3 lg:py-5 flex flex-col gap-2 md:gap-3"
+      >
+        {/* Search bar Row */}
+        <div className="flex w-full flex-col md:flex-row md:items-center md:gap-4 gap-2">
+          <div className="relative flex-1 max-w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Log in to start creating..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-10 bg-secondary/50 border-border/50 text-sm sm:text-base h-10 sm:h-11"
+              className="pl-10 pr-10 bg-secondary/60 border border-border text-sm sm:text-base h-10 sm:h-11 w-full transition focus:ring-2 focus:ring-primary/30"
             />
-            <button className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+            <button
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Filter"
+            >
               <SlidersHorizontal className="w-4 h-4" />
             </button>
           </div>
+        </div>
 
-          {/* Filters and sort - scrollable on mobile */}
-          <div className="flex items-center justify-between gap-3 overflow-x-auto pb-1 -mb-1">
-            {/* Sort label */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-              {sortOptions.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => setActiveSort(option.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
+        {/* Filters and Sort Row */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+          {/* Sort buttons */}
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 overflow-x-auto scrollbar-thin scrollbar-thumb-border/30">
+            {sortOptions.map((option) => (
+              <button
+                key={option.id}
+                onClick={() => setActiveSort(option.id)}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap border 
+                  ${
                     activeSort === option.id
-                      ? "bg-primary/20 text-primary"
-                      : "text-muted-foreground hover:text-foreground"
+                      ? "border-primary bg-primary/15 text-primary shadow"
+                      : "border-transparent text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
                   }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
+                aria-pressed={activeSort === option.id}
+              >
+                <option.icon className="w-3.5 h-3.5" />
+                <span>{option.label}</span>
+              </button>
+            ))}
+          </div>
 
-            {/* Type Filters */}
-            <div className="flex items-center gap-1 p-1 rounded-xl bg-secondary/50 flex-shrink-0">
-              {filters.map((filter) => {
-                const Icon = filter.icon;
-                return (
-                  <button
-                    key={filter.id}
-                    onClick={() => setActiveFilter(filter.id)}
-                    className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+          {/* Divider, visible only in desktop */}
+          <div className="hidden sm:block sm:px-3">
+            <span className="inline-block w-px h-6 bg-border" />
+          </div>
+
+          {/* Type Filters */}
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-secondary/60 shadow-inner flex-shrink-0 overflow-x-auto scrollbar-thin scrollbar-thumb-border/30">
+            {filters.map((filter) => {
+              const Icon = filter.icon;
+              return (
+                <button
+                  key={filter.id}
+                  onClick={() => setActiveFilter(filter.id)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all border
+                    ${
                       activeFilter === filter.id
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground"
+                        ? "bg-primary text-primary-foreground border-primary shadow"
+                        : "text-muted-foreground border-transparent hover:text-foreground hover:bg-primary/10"
                     }`}
-                  >
-                    <Icon className="w-3.5 h-3.5" />
-                    <span className="hidden xs:inline">{filter.label}</span>
-                  </button>
-                );
-              })}
-            </div>
+                  aria-pressed={activeFilter === filter.id}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span className="hidden xs:inline">{filter.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Masonry Grid */}
-      <motion.div
+      <motion.main
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.1 }}
-        className="pt-4 sm:pt-6"
+        transition={{ delay: 0.05, duration: 0.3 }}
+        className="pt-4 xl:pt-8 px-2 sm:px-4 xl:px-12"
       >
-        <div className="columns-2 sm:columns-3 lg:columns-4 xl:columns-5 gap-2 sm:gap-3 lg:gap-4">
-          {sortedItems.map((item) => (
-            <div key={item.id} className="mb-2 sm:mb-3 lg:mb-4 break-inside-avoid">
-              <MasonryCard
-                item={item}
-                onLike={handleLike}
-                onSave={handleSave}
-                onShare={handleShare}
-                onOpenComments={handleOpenComments}
-                onOpenReels={handleOpenReels}
-                onClick={handleOpenDetail}
-              />
-            </div>
-          ))}
+        <div className="max-w-screen-2xl mx-auto w-full">
+          <div
+            className="
+              gap-3 grid
+              grid-cols-1
+              sm:grid-cols-2
+              md:grid-cols-3
+              lg:grid-cols-4
+              xl:grid-cols-5
+              2xl:grid-cols-6
+              "
+          >
+            {sortedItems.map((item) => (
+              <div
+                key={item.id}
+                className="mb-4 flex flex-col min-w-0 break-inside-avoid"
+              >
+                <MasonryCard
+                  item={item}
+                  onLike={handleLike}
+                  onSave={handleSave}
+                  onShare={handleShare}
+                  onOpenComments={handleOpenComments}
+                  onOpenReels={handleOpenReels}
+                  onClick={handleOpenDetail}
+                />
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Infinite scroll trigger */}
-        <div ref={loadMoreRef} className="py-8 flex justify-center">
+        <div
+          ref={loadMoreRef}
+          className="py-10 flex justify-center items-center min-h-16"
+        >
           {isLoading && (
-            <div className="flex items-center gap-2 text-muted-foreground">
+            <div className="flex items-center gap-2 text-muted-foreground animate-pulse">
               <Loader2 className="w-5 h-5 animate-spin" />
-              <span className="text-sm">Loading more...</span>
+              <span className="text-sm font-medium">Loading more...</span>
             </div>
           )}
           {!hasMore && (
-            <p className="text-muted-foreground text-sm">You've seen it all! 🎉</p>
+            <p className="text-muted-foreground text-sm font-medium px-2 text-center">
+              You've seen it all! 🎉
+            </p>
           )}
         </div>
-      </motion.div>
+      </motion.main>
 
       {/* Image Detail Modal */}
       <ImageDetailModal
