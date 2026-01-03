@@ -234,7 +234,7 @@ const AgentLLMPage = () => {
 
   return (
     <TooltipProvider>
-    <div className="fixed inset-0 flex flex-col bg-background" style={{ height: '100vh', width: '100vw', maxWidth: '100vw', maxHeight: '100vh', overflow: 'hidden' }}>
+    <div className="fixed inset-0 flex flex-col bg-background overflow-hidden">
       {/* Background Image - Different for light/dark mode */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -359,7 +359,7 @@ const AgentLLMPage = () => {
         }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
       >
-        <div className={`w-full ${isInputFocused ? "space-y-4" : "space-y-6"}`} style={{ maxWidth: '768px', margin: '0 auto', paddingLeft: isInputFocused ? "16px" : "24px", paddingRight: isInputFocused ? "16px" : "24px", overflowX: 'hidden' }}>
+        <div className={`w-full ${isInputFocused ? "space-y-4" : "space-y-6"}`} style={{ maxWidth: '768px', margin: '0 auto', paddingLeft: isInputFocused ? "16px" : "clamp(16px, 4vw, 24px)", paddingRight: isInputFocused ? "16px" : "clamp(16px, 4vw, 24px)", overflowX: 'hidden' }}>
           {messages.length === 0 ? (
             <motion.div 
               className="flex items-center justify-center h-full"
@@ -396,7 +396,7 @@ const AgentLLMPage = () => {
                     : "bg-card border border-border/50 text-foreground"
                 }`}
                 style={{ 
-                  maxWidth: message.role === "user" ? "75%" : "80%", 
+                  maxWidth: message.role === "user" ? "min(75%, 100%)" : "min(80%, 100%)", 
                   width: 'fit-content',
                   minWidth: 0,
                   wordWrap: "break-word", 
@@ -523,7 +523,7 @@ const AgentLLMPage = () => {
         }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
       >
-        <div className="w-full" style={{ maxWidth: '768px', margin: '0 auto', paddingLeft: '24px', paddingRight: '24px', boxSizing: 'border-box' }}>
+        <div className="w-full" style={{ maxWidth: '768px', margin: '0 auto', paddingLeft: 'clamp(16px, 4vw, 24px)', paddingRight: 'clamp(16px, 4vw, 24px)', boxSizing: 'border-box' }}>
           <div className="relative w-full" style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
             <div 
               className="flex items-end gap-2 bg-card border border-border rounded-2xl shadow-lg hover:shadow-xl transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20"

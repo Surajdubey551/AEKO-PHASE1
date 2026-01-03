@@ -42,6 +42,7 @@ const toolsSubItems = [
 
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const location = useLocation();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
@@ -49,6 +50,18 @@ const DashboardLayout = () => {
   const isToolsActive = location.pathname.startsWith("/dashboard/tools");
   // Auto-open dropdown if on tools page
   const [toolsDropdownOpen, setToolsDropdownOpen] = useState(isToolsActive);
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024);
+      if (window.innerWidth >= 1024) {
+        setSidebarOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Update dropdown state when location changes
   useEffect(() => {
@@ -67,10 +80,17 @@ const DashboardLayout = () => {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-50 w-48 bg-card border-r border-border transform transition-transform duration-300 lg:translate-x-0 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+      <motion.aside
+        initial={false}
+        animate={{
+          x: isMobile ? (sidebarOpen ? 0 : "-100%") : 0,
+        }}
+        transition={{
+          type: "spring",
+          stiffness: 300,
+          damping: 30,
+        }}
+        className="fixed inset-y-0 left-0 z-50 w-48 bg-card/95 backdrop-blur-xl border-r border-border shadow-xl lg:shadow-none"
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
@@ -197,19 +217,21 @@ const DashboardLayout = () => {
             </button>
           </div>
         </div>
-      </aside>
+      </motion.aside>
 
       {/* Main Content */}
       <div className="flex-1 lg:ml-48">
         {/* Top Bar */}
         <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border">
           <div className="flex items-center justify-between px-4 lg:px-8 py-4">
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden text-foreground"
+              className="lg:hidden text-foreground p-2 rounded-lg hover:bg-secondary/50 transition-colors"
             >
               <Menu className="w-6 h-6" />
-            </button>
+            </motion.button>
 
             <div className="flex-1 lg:flex-none" />
 
@@ -237,18 +259,24 @@ const DashboardLayout = () => {
         </header>
 
         {/* Page Content */}
-        <main className="p-0">
+        <main className="p-4 lg:p-6 xl:p-8">
           <Outlet />
         </main>
       </div>
 
       {/* Mobile Overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
