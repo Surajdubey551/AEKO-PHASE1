@@ -362,16 +362,45 @@ const AgentLLMPage = () => {
         <div className={`w-full ${isInputFocused ? "space-y-4" : "space-y-6"}`} style={{ maxWidth: '768px', margin: '0 auto', paddingLeft: isInputFocused ? "16px" : "clamp(16px, 4vw, 24px)", paddingRight: isInputFocused ? "16px" : "clamp(16px, 4vw, 24px)", overflowX: 'hidden' }}>
           {messages.length === 0 ? (
             <motion.div 
-              className="flex items-center justify-center h-full"
+              className="flex items-center justify-center h-full min-h-[400px] sm:min-h-[500px]"
+              initial={{ opacity: 0, y: 20 }}
               animate={{
-                scale: isInputFocused ? 0.95 : 1,
                 opacity: isInputFocused ? 0.7 : 1,
+                y: 0,
+                scale: isInputFocused ? 0.95 : 1,
               }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.3 }}
             >
-              <div className="text-center space-y-2 w-full px-4">
-                <MessageSquare className="w-12 h-12 text-muted-foreground/50 mx-auto" />
-                <p className="text-muted-foreground">Start a conversation</p>
+              <div className="text-center space-y-4 sm:space-y-6 w-full max-w-md px-4 sm:px-6">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center border border-primary/20">
+                  <MessageSquare className="w-8 h-8 sm:w-10 sm:h-10 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
+                    Start a conversation
+                  </h3>
+                  <p className="text-sm sm:text-base text-muted-foreground">
+                    Ask me anything or describe what you'd like help with
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2 justify-center pt-4">
+                  {[
+                    "Explain quantum computing",
+                    "Write a creative story",
+                    "Help with coding",
+                    "Plan a project"
+                  ].map((suggestion, idx) => (
+                    <motion.button
+                      key={idx}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setInput(suggestion)}
+                      className="px-3 py-1.5 text-xs sm:text-sm rounded-full bg-secondary/50 hover:bg-secondary border border-border/50 text-muted-foreground hover:text-foreground transition-all"
+                    >
+                      {suggestion}
+                    </motion.button>
+                  ))}
+                </div>
               </div>
             </motion.div>
           ) : (
@@ -380,74 +409,99 @@ const AgentLLMPage = () => {
               key={message.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`flex gap-3 items-start w-full ${message.role === "user" ? "justify-end flex-row-reverse" : "justify-start"}`}
+              transition={{ duration: 0.3 }}
+              className={`flex gap-2 sm:gap-3 items-start w-full ${message.role === "user" ? "justify-end flex-row-reverse" : "justify-start"}`}
               style={{ maxWidth: '100%', overflowX: 'hidden' }}
             >
               {message.role === "assistant" && (
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center flex-shrink-0 mt-1">
-                  <MessageSquare className="w-4 h-4 text-primary" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center flex-shrink-0 mt-1 border border-primary/10">
+                  <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                 </div>
               )}
 
               <div
-                className={`rounded-2xl px-5 py-4 shadow-sm ${
+                className={`rounded-2xl px-4 py-3 sm:px-5 sm:py-4 shadow-sm transition-all ${
                   message.role === "user"
                     ? "bg-primary text-primary-foreground"
-                    : "bg-card border border-border/50 text-foreground"
+                    : "bg-card border border-border/50 text-foreground hover:border-border"
                 }`}
                 style={{ 
-                  maxWidth: message.role === "user" ? "min(75%, 100%)" : "min(80%, 100%)", 
+                  maxWidth: message.role === "user" ? "min(85%, 100%)" : "min(90%, 100%)", 
                   width: 'fit-content',
-                  minWidth: 0,
+                  minWidth: '120px',
                   wordWrap: "break-word", 
                   overflowWrap: "break-word",
                   overflowX: "hidden"
                 }}
               >
                 <div className="prose prose-sm dark:prose-invert max-w-none" style={{ maxWidth: '100%', overflowWrap: 'break-word' }}>
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap break-words m-0" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>{message.content}</p>
+                  <p className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words m-0" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>{message.content}</p>
                 </div>
                 {message.role === "assistant" && (
-                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleSend()}
-                        className="p-1.5 hover:bg-secondary/50 rounded-md transition-colors"
-                        title="Regenerate"
-                      >
-                        <RefreshCw className="w-3.5 h-3.5 text-muted-foreground" />
-                      </button>
-                      <button
-                        onClick={() => copyToClipboard(message.content)}
-                        className="p-1.5 hover:bg-secondary/50 rounded-md transition-colors"
-                        title="Copy"
-                      >
-                        <Copy className="w-3.5 h-3.5 text-muted-foreground" />
-                      </button>
-                      <button
-                        className="p-1.5 hover:bg-secondary/50 rounded-md transition-colors"
-                        title="Share"
-                      >
-                        <Share2 className="w-3.5 h-3.5 text-muted-foreground" />
-                      </button>
-                      <button
-                        className="p-1.5 hover:bg-secondary/50 rounded-md transition-colors"
-                        title="Like"
-                      >
-                        <ThumbsUp className="w-3.5 h-3.5 text-muted-foreground" />
-                      </button>
-                      <button
-                        className="p-1.5 hover:bg-secondary/50 rounded-md transition-colors"
-                        title="Dislike"
-                      >
-                        <ThumbsDown className="w-3.5 h-3.5 text-muted-foreground" />
-                      </button>
-                      <button
-                        className="p-1.5 hover:bg-secondary/50 rounded-md transition-colors"
-                        title="More"
-                      >
-                        <MoreHorizontal className="w-3.5 h-3.5 text-muted-foreground" />
-                      </button>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mt-3 pt-3 border-t border-border/50">
+                    <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => handleSend()}
+                            className="p-1.5 sm:p-1.5 hover:bg-secondary/50 rounded-md transition-colors"
+                          >
+                            <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>Regenerate</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => copyToClipboard(message.content)}
+                            className="p-1.5 sm:p-1.5 hover:bg-secondary/50 rounded-md transition-colors"
+                          >
+                            <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>Copy</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            className="p-1.5 sm:p-1.5 hover:bg-secondary/50 rounded-md transition-colors"
+                          >
+                            <Share2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>Share</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            className="p-1.5 sm:p-1.5 hover:bg-secondary/50 rounded-md transition-colors"
+                          >
+                            <ThumbsUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>Like</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            className="p-1.5 sm:p-1.5 hover:bg-secondary/50 rounded-md transition-colors"
+                          >
+                            <ThumbsDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>Dislike</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            className="p-1.5 sm:p-1.5 hover:bg-secondary/50 rounded-md transition-colors"
+                          >
+                            <MoreHorizontal className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>More</TooltipContent>
+                      </Tooltip>
                     </div>
                     {message.responseTime && (
                       <span className="text-xs text-muted-foreground/70 font-medium">
@@ -459,8 +513,8 @@ const AgentLLMPage = () => {
               </div>
 
               {message.role === "user" && (
-                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-1">
-                  <span className="text-xs font-semibold text-primary">U</span>
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-1 border border-primary/10">
+                  <span className="text-xs sm:text-sm font-semibold text-primary">U</span>
                 </div>
               )}
             </motion.div>
@@ -471,16 +525,17 @@ const AgentLLMPage = () => {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex gap-4 justify-start"
+            transition={{ duration: 0.3 }}
+            className="flex gap-2 sm:gap-4 justify-start"
           >
-            <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-              <MessageSquare className="w-4 h-4 text-muted-foreground" />
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center flex-shrink-0 border border-primary/10">
+              <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
             </div>
-            <div className="bg-card border border-border rounded-2xl px-4 py-3">
-              <div className="flex gap-1">
-                <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+            <div className="bg-card border border-border rounded-2xl px-4 py-3 sm:px-5 sm:py-4">
+              <div className="flex gap-1.5">
+                <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
               </div>
             </div>
           </motion.div>
@@ -540,15 +595,15 @@ const AgentLLMPage = () => {
               <DropdownMenu open={isAgentMenuOpen} onOpenChange={setIsAgentMenuOpen}>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className="p-2.5 hover:bg-secondary/50 rounded-lg transition-colors ml-1 flex-shrink-0 border border-border/50 hover:border-primary/50"
+                    className="p-2 sm:p-2.5 hover:bg-secondary/50 rounded-lg transition-colors ml-1 flex-shrink-0 border border-border/50 hover:border-primary/50"
                     title="Agent options"
                     type="button"
-                    style={{ minWidth: '40px', minHeight: '40px' }}
+                    style={{ minWidth: '36px', minHeight: '36px' }}
                   >
-                    <Plus className="w-5 h-5 text-foreground" strokeWidth={2} />
+                    <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" strokeWidth={2} />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" side="bottom" className="w-80 p-0 mt-2 z-50">
+                <DropdownMenuContent align="start" side="bottom" className="w-[calc(100vw-2rem)] sm:w-80 p-0 mt-2 z-50 max-w-sm">
                   <div className="p-4 space-y-4">
                     {/* Web Search Toggle at Top */}
                     <div className="flex items-center justify-between">
@@ -670,10 +725,10 @@ const AgentLLMPage = () => {
               </DropdownMenu>
               
               <button 
-                className="p-2.5 hover:bg-secondary/50 rounded-lg transition-colors flex-shrink-0"
+                className="p-2 sm:p-2.5 hover:bg-secondary/50 rounded-lg transition-colors flex-shrink-0"
                 title="Attach file"
               >
-                <Paperclip className="w-4 h-4 text-muted-foreground" />
+                <Paperclip className="w-4 h-4 sm:w-4 sm:h-4 text-muted-foreground" />
               </button>
               <div className="flex-1 relative min-w-0" style={{ maxWidth: '100%', overflowX: 'hidden' }}>
                 <textarea
@@ -692,24 +747,24 @@ const AgentLLMPage = () => {
                   }}
                   placeholder="Message AEKO..."
                   rows={1}
-                  className="w-full px-2 py-3 bg-transparent text-foreground placeholder:text-muted-foreground/60 focus:outline-none resize-none overflow-hidden text-sm leading-relaxed"
-                  style={{ minHeight: "52px", maxHeight: "200px", width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}
+                  className="w-full px-2 sm:px-3 py-2.5 sm:py-3 bg-transparent text-foreground placeholder:text-muted-foreground/60 focus:outline-none resize-none overflow-hidden text-sm sm:text-base leading-relaxed"
+                  style={{ minHeight: "44px", maxHeight: "200px", width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}
                 />
               </div>
-              <div className="flex items-center gap-1 pr-2 flex-shrink-0">
+              <div className="flex items-center gap-1 sm:gap-1.5 pr-1 sm:pr-2 flex-shrink-0">
                 <button 
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors"
+                  className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors"
                   title="Response mode"
                 >
                   <Rocket className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Auto</span>
+                  <span>Auto</span>
                   <ChevronDown className="w-3 h-3" />
                 </button>
                 
                 <button
                   onClick={handleSend}
                   disabled={!input.trim() || isLoading}
-                  className="p-2.5 bg-primary hover:bg-primary/90 disabled:bg-muted disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground rounded-lg transition-all shadow-sm hover:shadow-md disabled:shadow-none"
+                  className="p-2 sm:p-2.5 bg-primary hover:bg-primary/90 disabled:bg-muted disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground rounded-lg transition-all shadow-sm hover:shadow-md disabled:shadow-none"
                   title="Send message"
                 >
                   {isLoading ? (

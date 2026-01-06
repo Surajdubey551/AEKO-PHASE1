@@ -19,8 +19,8 @@ import {
   Moon,
   Store,
 } from "lucide-react";
-import logoDark from "@/assets/ChatGPT Image Dec 25, 2025, 03_45_44 PM.png";
-// import logoLight from "@/assets/ak-logo.png"; // Uncomment when you add the AK logo file
+import logoDarkBg from "@/assets/dark-bg.png";
+import logoWhiteBg from "@/assets/white-bg.png";
 import { Button } from "@/components/ui/button";
 import { authAPI } from "@/lib/api";
 import { toast } from "sonner";
@@ -41,7 +41,12 @@ const toolsSubItems = [
 ];
 
 const DashboardLayout = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Load sidebar state from localStorage, default to true on desktop, false on mobile
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem('sidebarOpen');
+    if (saved !== null) return saved === 'true';
+    return window.innerWidth >= 1024; // Default open on desktop
+  });
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const location = useLocation();
   const navigate = useNavigate();
@@ -51,17 +56,28 @@ const DashboardLayout = () => {
   // Auto-open dropdown if on tools page
   const [toolsDropdownOpen, setToolsDropdownOpen] = useState(isToolsActive);
 
+  // Save sidebar state to localStorage
+  useEffect(() => {
+    localStorage.setItem('sidebarOpen', sidebarOpen.toString());
+  }, [sidebarOpen]);
+
   // Handle window resize
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 1024);
-      if (window.innerWidth >= 1024) {
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      // On mobile, close sidebar by default when resizing
+      if (mobile && sidebarOpen) {
         setSidebarOpen(false);
       }
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [sidebarOpen]);
+
+  const toggleSidebar = () => {
+    setSidebarOpen(prev => !prev);
+  };
 
   // Update dropdown state when location changes
   useEffect(() => {
@@ -83,32 +99,35 @@ const DashboardLayout = () => {
       <motion.aside
         initial={false}
         animate={{
-          x: isMobile ? (sidebarOpen ? 0 : "-100%") : 0,
+          x: sidebarOpen ? 0 : "-100%",
         }}
         transition={{
           type: "spring",
           stiffness: 300,
           damping: 30,
         }}
-        className="fixed inset-y-0 left-0 z-50 w-48 bg-card/95 backdrop-blur-xl border-r border-border shadow-xl lg:shadow-none"
+        className="fixed inset-y-0 left-0 z-50 w-48 sm:w-56 bg-card/95 backdrop-blur-xl border-r border-border shadow-xl"
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-between px-6 py-5 border-b border-border">
             <Link to="/" className="flex items-center gap-2">
               <img 
-                src={logoDark} 
+                src={theme === "dark" ? logoDarkBg : logoWhiteBg} 
                 alt="AEKO" 
-                className="w-10 h-10 object-contain" 
+                className="w-10 h-10 object-contain transition-opacity duration-300" 
               />
               <span className="text-xl font-bold gradient-text">AEKO</span>
             </Link>
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="lg:hidden text-muted-foreground hover:text-foreground"
+            {/* <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={toggleSidebar}
+              className="text-muted-foreground hover:text-foreground p-1 rounded-lg hover:bg-secondary/50 transition-colors"
+              title="Close sidebar"
             >
               <X className="w-5 h-5" />
-            </button>
+            </motion.button> */}
           </div>
 
           {/* Navigation */}
@@ -120,7 +139,7 @@ const DashboardLayout = () => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  onClick={() => setSidebarOpen(false)}
+                  onClick={() => setSidebarOpen(true)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                     isActive
                       ? "bg-primary text-primary-foreground"
@@ -170,8 +189,8 @@ const DashboardLayout = () => {
                             key={item.path}
                             to={item.path}
                             onClick={() => {
-                              setSidebarOpen(false);
-                              setToolsDropdownOpen(false);
+                              setSidebarOpen(true);
+                              setToolsDropdownOpen(true);
                             }}
                             className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all ${
                               isActive
@@ -193,7 +212,7 @@ const DashboardLayout = () => {
             {/* Agent Store */}
             <Link
               to="/dashboard/agent-store"
-              onClick={() => setSidebarOpen(false)}
+              onClick={() => setSidebarOpen(true)}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                 location.pathname === "/dashboard/agent-store"
                   ? "bg-primary text-primary-foreground"
@@ -220,20 +239,33 @@ const DashboardLayout = () => {
       </motion.aside>
 
       {/* Main Content */}
-      <div className="flex-1 lg:ml-48">
+      <motion.div 
+        className="flex-1"
+        animate={{
+          marginLeft: sidebarOpen && !isMobile ? "12rem" : "0",
+        }}
+        transition={{
+          type: "spring",
+          stiffness: 300,
+          damping: 30,
+        }}
+      >
         {/* Top Bar */}
         <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border">
           <div className="flex items-center justify-between px-4 lg:px-8 py-4">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden text-foreground p-2 rounded-lg hover:bg-secondary/50 transition-colors"
+              onClick={toggleSidebar}
+              className="text-foreground p-2 rounded-lg hover:bg-secondary/50 transition-colors"
+              title={ `${sidebarOpen ? "Close sidebar" : "Open sidebar"}`}
             >
-              <Menu className="w-6 h-6" />
+          
+                <Menu className="w-6 h-6" />
+              
             </motion.button>
 
-            <div className="flex-1 lg:flex-none" />
+            <div className="flex-1" />
 
             <div className="flex items-center gap-3">
               <button
@@ -262,17 +294,17 @@ const DashboardLayout = () => {
         <main className="p-4 lg:p-6 xl:p-8">
           <Outlet />
         </main>
-      </div>
+      </motion.div>
 
-      {/* Mobile Overlay */}
+      {/* Overlay - Only on mobile */}
       <AnimatePresence>
-        {sidebarOpen && (
+        {sidebarOpen && isMobile && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 lg:hidden"
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
             onClick={() => setSidebarOpen(false)}
           />
         )}

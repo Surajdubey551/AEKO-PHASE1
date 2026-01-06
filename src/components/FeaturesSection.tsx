@@ -55,9 +55,13 @@ const features = [
 
 const FeaturesSection = () => {
   return (
-    <section id="features" className="py-24 lg:py-32 relative">
+    <section id="features" className="py-24 lg:py-32 relative scroll-mt-20 overflow-hidden">
       {/* Background gradient */}
       <div className="absolute inset-0 hero-gradient opacity-30" />
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
+        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '10s', animationDelay: '1s' }} />
+      </div>
 
       <div className="container mx-auto px-4 lg:px-8 relative z-10">
         {/* Section Header */}

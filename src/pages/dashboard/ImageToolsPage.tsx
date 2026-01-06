@@ -14,6 +14,8 @@ import {
   Share2,
   Copy,
   Wand2,
+  Eye,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/hooks/use-theme";
@@ -28,6 +30,55 @@ const imageModels = [
   { id: "flux", name: "FLUX Pro", icon: "✨", description: "High-quality realistic images" },
   { id: "sdxl", name: "Stable Diffusion XL", icon: "🎨", description: "Creative and artistic styles" },
   { id: "dalle", name: "DALL-E 3", icon: "🖼️", description: "Photorealistic and detailed" },
+];
+
+// Default preview image - professional placeholder
+const DEFAULT_PREVIEW_IMAGE = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80";
+
+// Example generations with prompts and results
+const exampleGenerations = [
+  {
+    id: 1,
+    prompt: "Cyberpunk cityscape at night with neon lights and flying cars",
+    image: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80",
+    model: "FLUX Pro",
+    timestamp: "2 hours ago",
+  },
+  {
+    id: 2,
+    prompt: "Portrait of a woman in studio lighting, professional photography",
+    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&q=80",
+    model: "DALL-E 3",
+    timestamp: "5 hours ago",
+  },
+  {
+    id: 3,
+    prompt: "Abstract digital art with vibrant colors and geometric shapes",
+    image: "https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=800&q=80",
+    model: "Stable Diffusion XL",
+    timestamp: "1 day ago",
+  },
+  {
+    id: 4,
+    prompt: "Fantasy landscape with mountains, waterfalls, and magical creatures",
+    image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80",
+    model: "FLUX Pro",
+    timestamp: "2 days ago",
+  },
+  {
+    id: 5,
+    prompt: "Product mockup render of a modern smartphone on white background",
+    image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&q=80",
+    model: "DALL-E 3",
+    timestamp: "3 days ago",
+  },
+  {
+    id: 6,
+    prompt: "Anime character design, detailed illustration style",
+    image: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&q=80",
+    model: "Stable Diffusion XL",
+    timestamp: "4 days ago",
+  },
 ];
 
 const ImageToolsPage = () => {
@@ -254,7 +305,7 @@ const ImageToolsPage = () => {
           </div>
 
           {/* Right: Output Preview */}
-          <div className="glass-card rounded-2xl p-4 sm:p-6 flex flex-col min-h-[300px] sm:min-h-[400px] max-h-[600px]">
+          <div className="glass-card rounded-2xl p-4 sm:p-6 flex flex-col min-h-[250px] sm:min-h-[400px] lg:min-h-[500px] max-h-[600px]">
             <AnimatePresence mode="wait">
               {generatedImage ? (
                 <motion.div
@@ -262,15 +313,16 @@ const ImageToolsPage = () => {
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.3 }}
                   className="flex flex-col h-full"
                 >
-                  <div className="relative rounded-xl overflow-hidden mb-4 flex-1 bg-secondary/30">
+                  <div className="relative rounded-xl overflow-hidden mb-4 flex-1 bg-secondary/30 group">
                     <img
                       src={generatedImage}
                       alt="Generated"
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 hover:opacity-100 transition-opacity" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" className="flex-1 gap-2">
@@ -288,24 +340,120 @@ const ImageToolsPage = () => {
                 </motion.div>
               ) : (
                 <motion.div
-                  key="placeholder"
+                  key="preview"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="flex flex-col items-center justify-center h-full text-center"
+                  transition={{ duration: 0.3 }}
+                  className="flex flex-col h-full"
                 >
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                    <Sparkles className="w-8 h-8 text-primary" />
+                  <div className="relative rounded-xl overflow-hidden mb-4 flex-1 bg-background border-2 border-dashed border-border/50 flex items-center justify-center p-6 sm:p-8">
+                    <div className="text-center w-full max-w-md">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-6 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center border border-primary/20">
+                        <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 text-primary" />
+                      </div>
+                      <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2 sm:mb-3">
+                        Ready to Create
+                      </h3>
+                      <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
+                        Enter a prompt and click Generate to see your AI creation appear here
+                      </p>
+                      {prompt && (
+                        <div className="mt-4 sm:mt-6 p-3 sm:p-4 rounded-lg bg-secondary/50 border border-border/50 text-left">
+                          <p className="text-xs sm:text-sm font-medium text-muted-foreground mb-2">Your Prompt:</p>
+                          <p className="text-sm sm:text-base text-foreground leading-relaxed">{prompt}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
-                    Ready to Create
-                  </h3>
-                  <p className="text-sm text-muted-foreground max-w-xs">
-                    Enter a prompt and click Generate to see your AI creation appear here
-                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button variant="outline" size="sm" className="flex-1 gap-2" disabled>
+                      <Download className="w-4 h-4" />
+                      <span className="hidden sm:inline">Download</span>
+                    </Button>
+                    <Button variant="outline" size="sm" className="flex-1 gap-2" disabled>
+                      <Share2 className="w-4 h-4" />
+                      <span className="hidden sm:inline">Share</span>
+                    </Button>
+                    <Button variant="outline" size="sm" className="gap-2" disabled>
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
+          </div>
+        </motion.div>
+
+        {/* Example Generations */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="space-y-4"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Eye className="w-5 h-5 text-primary" />
+              <h3 className="text-lg font-semibold text-foreground">
+                Example Generations
+              </h3>
+            </div>
+            <span className="text-sm text-muted-foreground">
+              See what others have created
+            </span>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {exampleGenerations.map((example, index) => (
+              <motion.div
+                key={example.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 + index * 0.1 }}
+                className="glass-card rounded-2xl overflow-hidden group hover:border-primary/50 transition-all cursor-pointer"
+                onClick={() => setPrompt(example.prompt)}
+              >
+                <div className="relative aspect-square overflow-hidden bg-secondary/30">
+                  <img
+                    src={example.image}
+                    alt={example.prompt}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                    <p className="text-sm font-medium text-foreground mb-1 line-clamp-2">
+                      {example.prompt}
+                    </p>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" />
+                        {example.model}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {example.timestamp}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4">
+                  <p className="text-sm font-medium text-foreground mb-2 line-clamp-2">
+                    {example.prompt}
+                  </p>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" />
+                      {example.model}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {example.timestamp}
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </motion.div>
 

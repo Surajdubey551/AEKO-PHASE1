@@ -19,9 +19,13 @@ const DevelopersSection = () => {
 const { image_url } = await response.json();`;
 
   return (
-    <section id="developers" className="py-24 lg:py-32 relative overflow-hidden">
+    <section id="developers" className="py-24 lg:py-32 relative overflow-hidden scroll-mt-20">
       {/* Background gradient */}
       <div className="absolute inset-0 hero-gradient opacity-20" />
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/3 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '8s' }} />
+        <div className="absolute bottom-1/3 right-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '10s', animationDelay: '1s' }} />
+      </div>
 
       <div className="container mx-auto px-4 lg:px-8 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">

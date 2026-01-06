@@ -14,6 +14,8 @@ import {
   Copy,
   Play,
   Pause,
+  Eye,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/hooks/use-theme";
@@ -27,6 +29,67 @@ const videoModels = [
   { id: "runway", name: "Runway Gen-2", icon: "🎬", description: "Cinematic quality videos" },
   { id: "pika", name: "Pika Labs", icon: "⚡", description: "Fast generation" },
   { id: "stability", name: "Stable Video", icon: "🎥", description: "Stable and consistent" },
+];
+
+// Default preview video - professional placeholder
+const DEFAULT_PREVIEW_VIDEO = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+
+// Example generations with prompts and results
+const exampleGenerations = [
+  {
+    id: 1,
+    prompt: "Aerial view of a futuristic city with flying vehicles and neon lights",
+    video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+    thumbnail: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80",
+    model: "Runway Gen-2",
+    timestamp: "2 hours ago",
+    duration: "10s",
+  },
+  {
+    id: 2,
+    prompt: "Time-lapse of clouds moving over a mountain landscape at sunset",
+    video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    thumbnail: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80",
+    model: "Pika Labs",
+    timestamp: "5 hours ago",
+    duration: "15s",
+  },
+  {
+    id: 3,
+    prompt: "Underwater coral reef scene with colorful fish swimming",
+    video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+    thumbnail: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80",
+    model: "Stable Video",
+    timestamp: "1 day ago",
+    duration: "12s",
+  },
+  {
+    id: 4,
+    prompt: "Abstract motion graphics with flowing particles and light trails",
+    video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+    thumbnail: "https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=800&q=80",
+    model: "Runway Gen-2",
+    timestamp: "2 days ago",
+    duration: "8s",
+  },
+  {
+    id: 5,
+    prompt: "Cinematic landscape pan across a misty forest at dawn",
+    video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+    thumbnail: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80",
+    model: "Pika Labs",
+    timestamp: "3 days ago",
+    duration: "15s",
+  },
+  {
+    id: 6,
+    prompt: "Product showcase animation of a modern watch rotating in 3D",
+    video: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
+    thumbnail: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80",
+    model: "Stable Video",
+    timestamp: "4 days ago",
+    duration: "10s",
+  },
 ];
 
 const VideoToolsPage = () => {
@@ -253,7 +316,7 @@ const VideoToolsPage = () => {
           </div>
 
           {/* Right: Output Preview */}
-          <div className="glass-card rounded-2xl p-4 sm:p-6 flex flex-col min-h-[300px] sm:min-h-[400px] max-h-[600px]">
+          <div className="glass-card rounded-2xl p-4 sm:p-6 flex flex-col min-h-[250px] sm:min-h-[400px] lg:min-h-[500px] max-h-[600px]">
             <AnimatePresence mode="wait">
               {generatedVideo ? (
                 <motion.div
@@ -261,6 +324,7 @@ const VideoToolsPage = () => {
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.3 }}
                   className="flex flex-col h-full"
                 >
                   <div className="relative rounded-xl overflow-hidden mb-4 flex-1 bg-secondary/30 group">
@@ -313,24 +377,139 @@ const VideoToolsPage = () => {
                 </motion.div>
               ) : (
                 <motion.div
-                  key="placeholder"
+                  key="preview"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="flex flex-col items-center justify-center h-full text-center"
+                  transition={{ duration: 0.3 }}
+                  className="flex flex-col h-full"
                 >
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                    <Sparkles className="w-8 h-8 text-primary" />
+                  <div className="relative rounded-xl overflow-hidden mb-4 flex-1 bg-background border-2 border-dashed border-border/50 flex items-center justify-center p-6 sm:p-8">
+                    <div className="text-center w-full max-w-md">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-6 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center border border-primary/20">
+                        <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 text-primary" />
+                      </div>
+                      <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2 sm:mb-3">
+                        Ready to Create
+                      </h3>
+                      <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
+                        Enter a prompt and click Generate to see your AI video appear here
+                      </p>
+                      {prompt && (
+                        <div className="mt-4 sm:mt-6 p-3 sm:p-4 rounded-lg bg-secondary/50 border border-border/50 text-left">
+                          <p className="text-xs sm:text-sm font-medium text-muted-foreground mb-2">Your Prompt:</p>
+                          <p className="text-sm sm:text-base text-foreground leading-relaxed">{prompt}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
-                    Ready to Create
-                  </h3>
-                  <p className="text-sm text-muted-foreground max-w-xs">
-                    Enter a prompt and click Generate to see your AI video appear here
-                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button variant="outline" size="sm" className="flex-1 gap-2" disabled>
+                      <Download className="w-4 h-4" />
+                      <span className="hidden sm:inline">Download</span>
+                    </Button>
+                    <Button variant="outline" size="sm" className="flex-1 gap-2" disabled>
+                      <Share2 className="w-4 h-4" />
+                      <span className="hidden sm:inline">Share</span>
+                    </Button>
+                    <Button variant="outline" size="sm" className="gap-2" disabled>
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
+          </div>
+        </motion.div>
+
+        {/* Example Generations */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="space-y-4"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Eye className="w-5 h-5 text-primary" />
+              <h3 className="text-lg font-semibold text-foreground">
+                Example Generations
+              </h3>
+            </div>
+            <span className="text-sm text-muted-foreground">
+              See what others have created
+            </span>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {exampleGenerations.map((example, index) => (
+              <motion.div
+                key={example.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 + index * 0.1 }}
+                className="glass-card rounded-2xl overflow-hidden group hover:border-primary/50 transition-all cursor-pointer"
+                onClick={() => setPrompt(example.prompt)}
+              >
+                <div className="relative aspect-video overflow-hidden bg-secondary/30">
+                  <video
+                    src={example.video}
+                    className="w-full h-full object-cover"
+                    loop
+                    muted
+                    playsInline
+                    onMouseEnter={(e) => {
+                      const video = e.currentTarget;
+                      video.play().catch(() => {});
+                    }}
+                    onMouseLeave={(e) => {
+                      const video = e.currentTarget;
+                      video.pause();
+                      video.currentTime = 0;
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute top-2 right-2 px-2 py-1 rounded-lg bg-background/80 backdrop-blur-sm text-xs font-medium text-foreground">
+                    {example.duration}
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                    <p className="text-sm font-medium text-foreground mb-1 line-clamp-2">
+                      {example.prompt}
+                    </p>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" />
+                        {example.model}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {example.timestamp}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                      <Play className="w-6 h-6 text-white ml-1" />
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4">
+                  <p className="text-sm font-medium text-foreground mb-2 line-clamp-2">
+                    {example.prompt}
+                  </p>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" />
+                      {example.model}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {example.timestamp}
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </motion.div>
 

@@ -1,16 +1,16 @@
 import { motion } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Sun, Moon } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import logoDark from "@/assets/ChatGPT Image Dec 25, 2025, 03_45_44 PM.png";
-// import logoLight from "@/assets/ak-logo.png"; // Uncomment when you add the AK logo file
+import logoDarkBg from "@/assets/dark-bg.png";
+import logoWhiteBg from "@/assets/white-bg.png";
 import { useTheme } from "@/hooks/use-theme";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-  const { theme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
 
   const navLinks = [
     { name: "Models", href: "#models" },
@@ -31,11 +31,11 @@ const Navbar = () => {
           {/* Logo */}
           <a href="#" className="flex items-center gap-2">
             <img 
-              src={logoDark} 
+              src={theme === "dark" ? logoDarkBg : logoWhiteBg} 
               alt="AEKO" 
-              className="w-10 h-10 object-contain" 
+              className="w-10 h-10 object-contain transition-opacity duration-300" 
             />
-            <span className="text-xl font-bold text-foreground">AEKO</span>
+            <span className="text-xl font-bold gradient-text">AEKO</span>
           </a>
 
           {/* Desktop Navigation */}
@@ -53,6 +53,19 @@ const Navbar = () => {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-4">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={toggleTheme}
+              className="p-2 rounded-lg hover:bg-secondary/50 transition-colors"
+              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {theme === "dark" ? (
+                <Sun className="w-5 h-5 text-foreground" />
+              ) : (
+                <Moon className="w-5 h-5 text-foreground" />
+              )}
+            </motion.button>
             <Button
               variant="ghost"
               size="sm"
@@ -69,13 +82,28 @@ const Navbar = () => {
             </Button>
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 text-foreground"
-          >
-            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          {/* Mobile Menu Button & Theme Toggle */}
+          <div className="md:hidden flex items-center gap-2">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={toggleTheme}
+              className="p-2 rounded-lg hover:bg-secondary/50 transition-colors"
+              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {theme === "dark" ? (
+                <Sun className="w-5 h-5 text-foreground" />
+              ) : (
+                <Moon className="w-5 h-5 text-foreground" />
+              )}
+            </motion.button>
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="p-2 text-foreground"
+            >
+              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -99,6 +127,24 @@ const Navbar = () => {
               </a>
             ))}
             <div className="pt-4 border-t border-border space-y-2">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={toggleTheme}
+                className="w-full flex items-center justify-start gap-2 px-3 py-2 rounded-lg hover:bg-secondary/50 transition-colors text-foreground"
+              >
+                {theme === "dark" ? (
+                  <>
+                    <Sun className="w-5 h-5" />
+                    <span>Light Mode</span>
+                  </>
+                ) : (
+                  <>
+                    <Moon className="w-5 h-5" />
+                    <span>Dark Mode</span>
+                  </>
+                )}
+              </motion.button>
               <Button
                 variant="ghost"
                 className="w-full justify-start"
