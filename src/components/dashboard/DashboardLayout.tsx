@@ -113,7 +113,7 @@ const DashboardLayout = () => {
                 <TooltipTrigger asChild>
                   <Link to="/" className="flex items-center justify-center">
                     <img 
-                      src={logoDark} 
+                      src={logoDarkBg} 
                       alt="AEKO" 
                       className="w-10 h-10 object-contain" 
                     />
@@ -380,7 +380,7 @@ const DashboardLayout = () => {
         <main className="p-1 lg:p-2">
           <Outlet />
         </main>
-      </motion.div>
+      </div>
 
       {/* Overlay - Only on mobile */}
       <AnimatePresence>
