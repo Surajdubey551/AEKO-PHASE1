@@ -2,9 +2,6 @@ import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import CreateAgentSection from "@/components/CreateAgentSection";
 import AllModelsSection from "@/components/AllModelsSection";
-import FeaturesSection from "@/components/FeaturesSection";
-import AIToolsSection from "@/components/AIToolsSection";
-import LLMAgentFeaturesSection from "@/components/LLMAgentFeaturesSection";
 import ImageToolsFeaturesSection from "@/components/ImageToolsFeaturesSection";
 import VideoToolsFeaturesSection from "@/components/VideoToolsFeaturesSection";
 import DevelopersSection from "@/components/DevelopersSection";
@@ -14,20 +11,33 @@ import Footer from "@/components/Footer";
 
 const Index = () => {
   return (
-    <main className="min-h-screen bg-background overflow-x-hidden">
-      <Navbar />
-      <HeroSection />
-      <CreateAgentSection />
-      <AllModelsSection />
-      <FeaturesSection />
-      <AIToolsSection />
-      <LLMAgentFeaturesSection />
-      <ImageToolsFeaturesSection />
-      <VideoToolsFeaturesSection />
-      <DevelopersSection />
-      <PricingSection />
-      <CTASection />
-      <Footer />
+    <main className="min-h-screen bg-background text-foreground overflow-x-hidden w-full relative" style={{ maxWidth: '90vw', margin: '0 auto' }}>
+      {/* Neural Network Background - Full Page (except hero) */}
+      <div 
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat bg-fixed pointer-events-none z-0"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1920&q=80')`,
+          opacity: 0.12,
+          filter: 'blur(0.5px)',
+        }}
+      />
+      
+      {/* Additional overlay for better text readability */}
+      <div className="fixed inset-0 bg-background/30 pointer-events-none z-0" />
+      
+      <div className="relative z-10">
+        <Navbar />
+        <div style={{ maxWidth: '90vw', margin: '0 auto', width: '100%' }}>
+          <HeroSection />
+          <CreateAgentSection />
+          <AllModelsSection />
+          <ImageToolsFeaturesSection />
+          <VideoToolsFeaturesSection />
+          <PricingSection />
+          <CTASection />
+          <Footer />
+        </div>
+      </div>
     </main>
   );
 };
